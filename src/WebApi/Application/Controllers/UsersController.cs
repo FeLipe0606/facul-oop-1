@@ -37,7 +37,7 @@ namespace FaculOop.WebApi.Application.Controllers
             _context.SaveChanges();
             return new ObjectResult(createUser.User)
             {
-                StatusCode = (int) HttpStatusCode.Created
+                StatusCode = (int)HttpStatusCode.Created
             };
             /*
             if (_users.TryAdd(createUser.UserId, createUser.User))
@@ -56,7 +56,8 @@ namespace FaculOop.WebApi.Application.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult GetAll() {
+        public IActionResult GetAll()
+        {
             return Ok(_context.Set<User>().ToList());
         }
 
@@ -65,13 +66,16 @@ namespace FaculOop.WebApi.Application.Controllers
         /// </summary>
         /// <param name="userId">Identificador do usuário.</param>
         /// <returns></returns>
-        // [HttpGet("{userId}")]
+        [HttpGet("{userId}")]
         public IActionResult GetById(int userId)
         {
-            if (_users.TryGetValue(userId, out string user))
+            User user = _context.Find<User>(userId);
+
+            if (user != null)
             {
                 return Ok(user);
             }
+
             return NotFound();
         }
 
@@ -84,11 +88,15 @@ namespace FaculOop.WebApi.Application.Controllers
         [HttpPut("{userId}")]
         public IActionResult UpdateById(int userId, [FromBody] UpdateUserDTO updateUser)
         {
-            if (_users.ContainsKey(userId))
+            User user = _context.Find<User>(userId);
+
+            if (user != null)
             {
-                _users[userId] = updateUser.User;
+                user.Username = updateUser.User;
+                _context.SaveChanges();
                 return Ok();
             }
+
             return NotFound();
         }
 
@@ -100,10 +108,15 @@ namespace FaculOop.WebApi.Application.Controllers
         [HttpDelete("{userId}")]
         public IActionResult DeleteById(int userId)
         {
-            if (_users.Remove(userId))
+            User user = _context.Find<User>(userId);
+
+            if (user != null)
             {
+                _context.Remove<User>(user);
+                _context.SaveChanges();
                 return NoContent();
             }
+
             return NotFound();
         }
     }
